@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -429,6 +429,26 @@
             display: block;
             height: 50px;
         }
+
+        /* Typing effect styles */
+        .typing-text {
+            overflow: hidden;
+            border-right: 2px solid #ff4d6d;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            animation: typing-cursor 1s infinite;
+            min-height: 3rem;
+        }
+
+        @keyframes typing-cursor {
+            0%, 50% { border-color: #ff4d6d; }
+            51%, 100% { border-color: transparent; }
+        }
+
+        .typing-complete {
+            border-right: none;
+            white-space: normal;
+        }
     </style>
 </head>
 <body class="gradient-bg text-gray-800 min-h-screen flex items-center justify-center p-4 relative">
@@ -519,7 +539,7 @@
     <div id="main-content" class="text-center w-full max-w-4xl mx-auto">
         <header class="mb-8">
             <h1 id="main-title" class="font-dancing text-5xl md:text-7xl font-bold text-pink-600"></h1>
-            <p class="text-xl md:text-2xl mt-4 text-pink-800">Gửi đến những người phụ nữ Việt Nam tuyệt vời nhất!</p>
+            <p id="subtitle" class="text-xl md:text-2xl mt-4 text-pink-800">Gửi đến những người phụ nữ Việt Nam tuyệt vời nhất!</p>
         </header>
 
         <main>
@@ -897,8 +917,17 @@
 
         // --- Hiệu ứng chữ (ĐÃ CẬP NHẬT để giữ các từ dính liền) ---
         function animateTitle() {
-            const text = "Mừng Ngày 20 Tháng 10";
+            // Lấy tên người nhận và người gửi từ dữ liệu hiện tại
+            const recipientName = currentWomensDayData ? currentWomensDayData.recipientName : 'Bạn';
+            const senderName = currentWomensDayData ? currentWomensDayData.userName : 'Người Gửi';
+            const text = `Chúc Mừng ${recipientName} Ngày 20/10`;
             mainTitle.innerHTML = ''; 
+            
+            // Cập nhật subtitle với thông tin người gửi
+            const subtitle = document.getElementById('subtitle');
+            if (subtitle) {
+                subtitle.textContent = `💌 Món quà đặc biệt từ ${senderName} 💌`;
+            }
             
             // 1. Tách chuỗi thành các từ
             const words = text.split(' ');
@@ -946,14 +975,54 @@
         
         // Tạo mặt sau của thiệp
         function createCardBackContent(wishData) {
+            // Lấy thông tin người gửi và người nhận từ dữ liệu hiện tại
+            const senderName = currentWomensDayData ? currentWomensDayData.userName : 'Người Gửi';
+            const recipientName = currentWomensDayData ? currentWomensDayData.recipientName : 'Người Nhận';
+            
             return `
-                <div class="w-full h-full ${wishData.bgColor} rounded-2xl shadow-2xl flex flex-col md:flex-row items-center justify-center p-4 md:p-6 overflow-hidden border-4 border-white">
-                    <img src="${wishData.image}" alt="Hình ảnh chúc mừng" class="w-32 h-32 md:w-48 md:h-48 object-cover rounded-full shadow-lg mb-4 md:mb-0 md:mr-6 flex-shrink-0 border-4 border-white">
-                    <p class="text-gray-700 text-lg md:text-xl text-center md:text-left font-semibold">
-                        ${wishData.wish}
-                    </p>
+                <div class="w-full h-full ${wishData.bgColor} rounded-2xl shadow-2xl flex flex-col items-center justify-center p-4 md:p-6 overflow-hidden border-4 border-white">
+                    <!-- Phần trên: Ảnh và thông tin người gửi/nhận cùng dòng -->
+                    <div class="flex items-center justify-center mb-6 w-full">
+                        <img src="${wishData.image}" alt="Hình ảnh chúc mừng" class="w-20 h-20 md:w-28 md:h-28 object-cover rounded-full shadow-lg flex-shrink-0 border-4 border-white mr-4">
+                        
+                        <!-- Thông tin người gửi và người nhận -->
+                        <div class="text-center">
+                            <div class="text-pink-600 font-bold text-base md:text-lg mb-1">
+                                💌 Gửi đến: <span class="text-purple-700">${recipientName}</span>
+                            </div>
+                            <div class="text-gray-600 text-sm md:text-base">
+                                Từ: <span class="font-semibold text-pink-700">${senderName}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lời chúc với hiệu ứng viết từng chữ -->
+                    <div class="bg-white bg-opacity-90 rounded-lg p-4 shadow-lg max-w-md w-full">
+                        <p id="typing-text" class="text-gray-700 text-base md:text-lg text-center font-semibold leading-relaxed min-h-[3rem]">
+                            <!-- Text sẽ được thêm bằng JavaScript -->
+                        </p>
+                    </div>
                 </div>
             `;
+        }
+
+        // Hàm hiệu ứng viết từng chữ
+        function typeText(element, text, speed = 50) {
+            element.innerHTML = '';
+            element.classList.add('typing-text');
+            element.classList.remove('typing-complete');
+            
+            let i = 0;
+            const timer = setInterval(() => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(timer);
+                    element.classList.remove('typing-text');
+                    element.classList.add('typing-complete');
+                }
+            }, speed);
         }
         
         // Hiển thị lời chúc mới
@@ -980,6 +1049,14 @@
             if (!card.classList.contains('is-flipped')) {
                 card.classList.add('is-flipped');
             }
+            
+            // Bắt đầu hiệu ứng typing sau khi card đã flip
+            setTimeout(() => {
+                const typingElement = document.getElementById('typing-text');
+                if (typingElement) {
+                    typeText(typingElement, randomWish.wish, 80);
+                }
+            }, 500);
         }
 
         // Sự kiện click nút và hộp quà
