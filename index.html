@@ -920,13 +920,13 @@
             // Lấy tên người nhận và người gửi từ dữ liệu hiện tại
             const recipientName = currentWomensDayData ? currentWomensDayData.recipientName : 'Bạn';
             const senderName = currentWomensDayData ? currentWomensDayData.userName : 'Người Gửi';
-            const text = `Chúc Mừng ${recipientName} Ngày 20/10`;
+            const text = `Chúc Mừng Ngày 20/10`;
             mainTitle.innerHTML = ''; 
             
             // Cập nhật subtitle với thông tin người gửi
             const subtitle = document.getElementById('subtitle');
             if (subtitle) {
-                subtitle.textContent = `💌 Món quà đặc biệt từ ${senderName} 💌`;
+                subtitle.textContent = `Gửi tặng tới tất cả các bạn nữ trong lớp`;
             }
             
             // 1. Tách chuỗi thành các từ
